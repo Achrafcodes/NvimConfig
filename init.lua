@@ -6,7 +6,7 @@
 vim.o.swapfile = false
 vim.o.backup = false
 vim.o.writebackup = false
-vim.o.hidden = true
+vim.o.termguicolors = true -- Enable true color for colorschemes
 
 -- 2. jk to exit insert mode
 vim.api.nvim_set_keymap("i", "jk", "<Esc>", { noremap = true, silent = true })
@@ -28,20 +28,46 @@ vim.opt.rtp:prepend(lazypath)
 -- 4. Setup LazyVim and plugins
 require("lazy").setup({
   spec = {
-    -- 4a. LazyVim core
-    { "LazyVim/LazyVim", import = "lazyvim.plugins" },
+    -- 4a. Sonokai colorscheme plugin (must be loaded first)
+    { "sainnhe/sonokai", lazy = false, priority = 1000 },
 
-    -- 4b. LazyVim extras
-    { import = "lazyvim.plugins.extras.lsp.none-ls" }, -- formatting & linting
-    { import = "lazyvim.plugins.extras.lang.typescript" }, -- TS/JS support
+    -- 4b. LazyVim core
+    {
+      "LazyVim/LazyVim",
+      import = "lazyvim.plugins",
+      opts = {
+        colorscheme = "sonokai",
+      },
+      config = function(_, opts)
+        require("lazyvim.config").setup(opts)
+
+        -- Apply bold & italic highlights when color scheme loads
+        vim.api.nvim_create_autocmd("ColorScheme", {
+          pattern = "*",
+          callback = function()
+            vim.cmd([[
+              hi Keyword gui=bold cterm=bold
+              hi Function gui=bold cterm=bold
+              hi Type gui=bold cterm=bold
+              hi Statement gui=bold cterm=bold
+              hi Comment gui=bold,italic cterm=bold,italic
+            ]])
+          end,
+        })
+      end,
+    },
+
+    -- 4c. LazyVim extras
+    { import = "lazyvim.plugins.extras.lsp.none-ls" }, -- Formatting & linting
+    { import = "lazyvim.plugins.extras.lang.typescript" }, -- TypeScript/JS support
     { import = "lazyvim.plugins.extras.dap" }, -- Debugging (DAP)
 
-    -- 4c. Your custom plugins
+    -- 4d. Your custom plugins folder (e.g. rainbow-delimiters)
     { import = "plugins" },
   },
 
   defaults = { lazy = false, version = false },
-  install = { colorscheme = { "tokyonight", "habamax" } },
+  install = { colorscheme = { "sonokai", "habamax" } },
   checker = { enabled = true, notify = false },
   performance = {
     rtp = {
@@ -55,6 +81,26 @@ require("lazy").setup({
     },
   },
 })
-vim.g.sonokai_style = "andromeda" -- (options: default, atlantis, andromeda, shusia, maia, espresso)
-vim.g.sonokai_better_performance = 1
-vim.cmd("colorscheme sonokai")
+
+-- 5. Sonokai configuration
+
+vim.defer_fn(function()
+  vim.cmd([[
+    hi Keyword gui=bold cterm=bold
+    hi Function gui=bold cterm=bold
+    hi Type gui=bold cterm=bold
+    hi Statement gui=bold cterm=bold
+    hi Comment gui=bold,italic cterm=bold,italic
+  ]])
+end, 100)
+vim.opt.termguicolors = true
+
+-- Enable bold & italic highlighting
+vim.cmd([[
+  highlight Comment cterm=italic gui=italic
+  highlight Keyword cterm=bold gui=bold
+  highlight Function cterm=bold gui=bold
+]])
+
+vim.cmd("set t_ZH=[3m")
+vim.cmd("set t_ZR=[23m")

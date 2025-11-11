@@ -1,7 +1,7 @@
 local M = {}
 
 -- List of installed colorschemes
-M.themes = { "tokyonight", "habamax", "catppuccin", "gruvbox" }
+M.themes = { "tokyonight-night", "habamax", "catppuccin", "gruvbox" }
 
 -- Open a picker using Telescope
 function M.pick_theme()
